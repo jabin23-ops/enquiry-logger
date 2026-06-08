@@ -169,6 +169,14 @@
   .view{display:none} .view.on{display:block}
   .hint{font-size:12px;color:var(--muted);margin:-4px 0 9px}
   .cfgwarn{background:var(--amber-soft);color:#7a5a10;font-size:12px;font-weight:600;padding:9px 12px;border-radius:10px;margin-bottom:14px;display:none}
+  .lookup-link{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:13px;padding:13px;font-size:15px;font-weight:800;color:var(--accent);text-decoration:none;margin-bottom:18px}
+  .lookup-link:active{transform:scale(.99)}
+  .custlk{margin-top:8px;padding:11px 13px;border-radius:11px;font-size:13px;line-height:1.45}
+  .custlk.loading{background:var(--chip);color:var(--muted)}
+  .custlk.newc{background:var(--green-soft);color:var(--green);font-weight:700}
+  .custlk.hit{background:var(--blue-soft);color:var(--blue)}
+  .custlk.hit b{display:block;font-size:14.5px;margin-bottom:2px}
+  .custlk a{display:inline-block;margin-top:6px;margin-left:0;color:var(--accent);font-weight:800;text-decoration:none}
 </style>
 </head>
 <body>
@@ -182,6 +190,8 @@
     <!-- NEW ENQUIRY VIEW -->
     <section class="view on" id="vNew">
       <div class="cfgwarn" id="cfgwarn">⚠️ Cloud sync not set up yet — entries are saved on this phone only. See setup steps.</div>
+
+      <a class="lookup-link" id="lookupLink" href="find-customer.html" target="_blank">🔍 Look up a customer by phone</a>
 
       <!-- Tyre size -->
       <div class="group">
@@ -255,6 +265,7 @@
       <div class="group">
         <label class="glabel"><span class="req">●</span> Phone Number</label>
         <input type="tel" id="custPhone" placeholder="Customer phone" autocomplete="off">
+        <div id="custLookup" class="custlk" style="display:none"></div>
       </div>
 
       <!-- OPTIONAL -->
@@ -338,6 +349,7 @@
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxe6XB43KTv2WehhAwAHrkVc2Cg89hgHJvEgrDewy26DtjXG7iFWAAHjOXJyDycuMCy/exec';
 const BRANCH = 'Azaiba';
 const DEFAULT_STAFF = ['Jabin'];   // staff can add their own names too
+const FIND_KEY = 'gx-find-7Qm2p';  // access key for the customer lookup (same backend)
 
 /* ---------- storage keys ---------- */
 const K_STAFF='enq_staff_v1', K_ROSTER='enq_roster_v1', K_QUEUE='enq_queue_v1';
@@ -388,6 +400,33 @@ function getQueue(){return JSON.parse(localStorage.getItem(K_QUEUE)||'[]');}
 function setQueue(q){localStorage.setItem(K_QUEUE,JSON.stringify(q));}
 function todayStr(){return new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Muscat'});}
 function omanStamp(d){return d.toLocaleString('en-GB',{timeZone:'Asia/Muscat',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true});}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function jsonp(params, cb){
+  const id='cb_'+Date.now()+Math.floor(Math.random()*10000);let s;
+  const done=dt=>{try{cb(dt);}finally{delete window[id];if(s&&s.parentNode)s.remove();}};
+  window[id]=done;s=document.createElement('script');
+  const qs=Object.entries(params).map(([k,v])=>k+'='+encodeURIComponent(v)).join('&');
+  s.src=APPS_SCRIPT_URL+'?'+qs+'&callback='+id;s.onerror=()=>done({ok:false});
+  document.body.appendChild(s);setTimeout(()=>{if(window[id])done({ok:false});},20000);
+}
+let lkTimer=null, lkLast='';
+function onPhoneLookup(){
+  const q=$('custPhone').value.replace(/\D/g,'');const box=$('custLookup');
+  if(!APPS_SCRIPT_URL||q.length<8){box.style.display='none';lkLast='';return;}
+  if(q===lkLast)return;lkLast=q;
+  box.style.display='block';box.className='custlk loading';box.textContent='Checking history…';
+  jsonp({phone:q,key:FIND_KEY},res=>{
+    if($('custPhone').value.replace(/\D/g,'')!==q)return; // stale guard
+    if(!res||!res.ok){box.style.display='none';return;}
+    const bills=res.bills||[];
+    if(!bills.length){box.className='custlk newc';box.textContent='✓ New customer — no past purchases';return;}
+    const name=(bills.map(b=>b.b).find(b=>b&&!/^(CIH|CASH|GLOBAL ORYX)/i.test(b)))||'Returning customer';
+    const sizes=new Set();[].concat(...bills.map(b=>b.i||[])).forEach(it=>{const m=it.match(/(\d{3})\s*\/\s*(\d{2})\s*R\s*(\d{2})/i);if(m)sizes.add(m[1]+'/'+m[2]+' R'+m[3]);});
+    const sz=[...sizes].slice(0,2).join(', ');
+    box.className='custlk hit';
+    box.innerHTML='<b>🔁 '+esc(name)+'</b>'+bills.length+' visit'+(bills.length>1?'s':'')+(sz?' · runs '+esc(sz):'')+'<a href="find-customer.html?phone='+q+'" target="_blank">View full history →</a>';
+  });
+}
 
 /* ---------- build pickers ---------- */
 function buildScroller(el,arr,key,cb){arr.forEach(v=>{const c=chip(v,v);c.onclick=()=>{[...el.children].forEach(x=>x.classList.remove('on'));c.classList.add('on');S[key]=String(v);(cb||updateSize)();};el.appendChild(c);});}
@@ -490,6 +529,7 @@ function resetForm(){
   $('sizeDisp').innerHTML='<span class="ph">Pick width · profile · rim</span>';
   $('sizeType').value='';$('modelGroup').style.display='none';$('reasonGroup').style.display='none';
   $('price').value='';$('custName').value='';$('custPhone').value='';$('modelOther').value='';
+  $('custLookup').style.display='none';lkLast='';
   $('qVal').textContent='4';
   // reset rear size
   $('rearWrap').style.display='none';$('rearToggle').textContent='＋ Different rear size (staggered)';
@@ -602,7 +642,7 @@ function wire(){
   };
   $('sizeType').addEventListener('input',updateSize);
   $('modelOther').addEventListener('input',checkValid);
-  $('custPhone').addEventListener('input',checkValid);
+  $('custPhone').addEventListener('input',()=>{checkValid();clearTimeout(lkTimer);lkTimer=setTimeout(onPhoneLookup,600);});
   $('rearToggle').onclick=()=>{
     const on=$('rearWrap').style.display==='none';
     $('rearWrap').style.display=on?'block':'none';

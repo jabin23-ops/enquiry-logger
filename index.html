@@ -196,6 +196,18 @@
         <div id="sizeTypeWrap" style="display:none;margin-top:8px">
           <input type="text" id="sizeType" placeholder="e.g. 7.50R16 or 31x10.5R15" autocomplete="off">
         </div>
+        <button class="linkbtn" id="rearToggle" style="display:block;margin-top:4px">＋ Different rear size (staggered)</button>
+        <div id="rearWrap" style="display:none;margin-top:8px;padding-top:12px;border-top:1px dashed var(--line)">
+          <div class="pl" style="font-weight:800;color:var(--ink);margin-bottom:6px">REAR SIZE</div>
+          <div class="size-display" id="rearDisp"><span class="ph">Pick rear width · profile · rim</span></div>
+          <div id="rearPickers">
+            <div class="picker"><div class="pl">Width</div><div class="scroller" id="rWidth"></div></div>
+            <div class="picker"><div class="pl">Profile</div><div class="scroller" id="rProfile"></div></div>
+            <div class="picker"><div class="pl">Rim</div><div class="scroller" id="rRim"></div></div>
+          </div>
+          <button class="linkbtn" id="rearTypeToggle">Type an odd rear size instead</button>
+          <div id="rearTypeWrap" style="display:none;margin-top:8px"><input type="text" id="rearType" placeholder="Rear size" autocomplete="off"></div>
+        </div>
       </div>
 
       <!-- Make / Model -->
@@ -361,7 +373,8 @@ const MAKES={
 
 /* ---------- state ---------- */
 let S={size:'',sizeMode:'pick',w:'',p:'',r:'',make:'',model:'',year:'',origin:'',mode:'Walk-in',
-       qty:4,brand:'',outcome:'Quote-pending',reason:'',price:'',custName:'',custPhone:''};
+       qty:4,brand:'',outcome:'Quote-pending',reason:'',price:'',custName:'',custPhone:'',
+       rearOn:false,rearMode:'pick',rw:'',rp:'',rr:'',rearSize:''};
 let staff = localStorage.getItem(K_STAFF) || '';
 let roster = JSON.parse(localStorage.getItem(K_ROSTER) || 'null') || DEFAULT_STAFF.slice();
 let editingId = null;
@@ -377,7 +390,7 @@ function todayStr(){return new Date().toLocaleDateString('en-CA',{timeZone:'Asia
 function omanStamp(d){return d.toLocaleString('en-GB',{timeZone:'Asia/Muscat',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true});}
 
 /* ---------- build pickers ---------- */
-function buildScroller(el,arr,key){arr.forEach(v=>{const c=chip(v,v);c.onclick=()=>{[...el.children].forEach(x=>x.classList.remove('on'));c.classList.add('on');S[key]=String(v);updateSize();};el.appendChild(c);});}
+function buildScroller(el,arr,key,cb){arr.forEach(v=>{const c=chip(v,v);c.onclick=()=>{[...el.children].forEach(x=>x.classList.remove('on'));c.classList.add('on');S[key]=String(v);(cb||updateSize)();};el.appendChild(c);});}
 function updateSize(){
   if(S.sizeMode==='type'){S.size=$('sizeType').value.trim().toUpperCase();}
   else if(S.w&&S.p&&S.r){S.size=S.w+'/'+S.p+'R'+S.r;}
@@ -386,12 +399,21 @@ function updateSize(){
   disp.innerHTML = S.size ? S.size : '<span class="ph">Pick width · profile · rim</span>';
   checkValid();
 }
+function updateRearSize(){
+  if(S.rearMode==='type'){S.rearSize=$('rearType').value.trim().toUpperCase();}
+  else if(S.rw&&S.rp&&S.rr){S.rearSize=S.rw+'/'+S.rp+'R'+S.rr;}
+  else S.rearSize='';
+  $('rearDisp').innerHTML = S.rearSize ? S.rearSize : '<span class="ph">Pick rear width · profile · rim</span>';
+}
 function buildChips(el,arr,key,after){el.innerHTML='';arr.forEach(v=>{const c=chip(v,v);c.onclick=()=>{[...el.children].forEach(x=>x.classList.remove('on'));c.classList.add('on');S[key]=v;if(after)after(v);checkValid();};el.appendChild(c);});}
 
 function initUI(){
   buildScroller($('pWidth'),WIDTHS,'w');
   buildScroller($('pProfile'),PROFILES,'p');
   buildScroller($('pRim'),RIMS,'r');
+  buildScroller($('rWidth'),WIDTHS,'rw',updateRearSize);
+  buildScroller($('rProfile'),PROFILES,'rp',updateRearSize);
+  buildScroller($('rRim'),RIMS,'rr',updateRearSize);
 
   // makes
   const mk=$('makeChips');
@@ -433,6 +455,8 @@ function checkValid(){
 /* ---------- save ---------- */
 function buildRecord(){
   let model=S.model==='Other'?($('modelOther').value.trim()||'Other'):S.model;
+  let sz=S.size;
+  if(S.rearOn && S.rearSize) sz='F: '+S.size+'  /  R: '+S.rearSize;
   const now=new Date();
   return {
     id:'e'+now.getTime()+Math.floor(Math.random()*1000),
@@ -441,7 +465,7 @@ function buildRecord(){
     date:todayStr(),
     staff:staff||'(unknown)',
     branch:BRANCH,
-    size:S.size, make:S.make, model:model, year:S.year,
+    size:sz, rearSize:(S.rearOn?S.rearSize:''), make:S.make, model:model, year:S.year,
     origin:S.origin, mode:S.mode, qty:S.qty, brand:S.brand,
     outcome:S.outcome, reason:S.outcome==='Lost'?S.reason:'',
     price:$('price').value||'',
@@ -460,12 +484,18 @@ function saveEnquiry(){
 }
 function resetForm(){
   S={size:'',sizeMode:'pick',w:'',p:'',r:'',make:'',model:'',year:'',origin:'',mode:'Walk-in',
-     qty:4,brand:'',outcome:'Quote-pending',reason:'',price:'',custName:'',custPhone:''};
+     qty:4,brand:'',outcome:'Quote-pending',reason:'',price:'',custName:'',custPhone:'',
+     rearOn:false,rearMode:'pick',rw:'',rp:'',rr:'',rearSize:''};
   document.querySelectorAll('#vNew .chip.on').forEach(c=>c.classList.remove('on'));
   $('sizeDisp').innerHTML='<span class="ph">Pick width · profile · rim</span>';
   $('sizeType').value='';$('modelGroup').style.display='none';$('reasonGroup').style.display='none';
   $('price').value='';$('custName').value='';$('custPhone').value='';$('modelOther').value='';
   $('qVal').textContent='4';
+  // reset rear size
+  $('rearWrap').style.display='none';$('rearToggle').textContent='＋ Different rear size (staggered)';
+  $('rearType').value='';$('rearTypeWrap').style.display='none';$('rearPickers').style.display='block';
+  $('rearTypeToggle').textContent='Type an odd rear size instead';
+  $('rearDisp').innerHTML='<span class="ph">Pick rear width · profile · rim</span>';
   // restore defaults
   [...$('modeChips').children].find(c=>c.dataset.val==='Walk-in').classList.add('on');
   [...$('outcomeChips').children].find(c=>c.dataset.val==='Quote-pending').classList.add('on');
@@ -573,6 +603,21 @@ function wire(){
   $('sizeType').addEventListener('input',updateSize);
   $('modelOther').addEventListener('input',checkValid);
   $('custPhone').addEventListener('input',checkValid);
+  $('rearToggle').onclick=()=>{
+    const on=$('rearWrap').style.display==='none';
+    $('rearWrap').style.display=on?'block':'none';
+    S.rearOn=on;
+    $('rearToggle').textContent=on?'− Remove rear size':'＋ Different rear size (staggered)';
+  };
+  $('rearTypeToggle').onclick=()=>{
+    const typing=$('rearTypeWrap').style.display==='none';
+    $('rearTypeWrap').style.display=typing?'block':'none';
+    $('rearPickers').style.display=typing?'none':'block';
+    S.rearMode=typing?'type':'pick';
+    $('rearTypeToggle').textContent=typing?'Use the pickers instead':'Type an odd rear size instead';
+    updateRearSize();
+  };
+  $('rearType').addEventListener('input',updateRearSize);
 
   $('optToggle').onclick=()=>{const b=$('optBody');const open=b.classList.toggle('show');$('optIcon').textContent=open?'−':'＋';};
   $('qMinus').onclick=()=>{if(S.qty>1){S.qty--;$('qVal').textContent=S.qty;}};

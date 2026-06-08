@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#C75D3A">
+<title>Enquiry Logger — Azaiba</title>
+<style>
+  :root{
+    --bg:#FAF5EE; --card:#FFFFFF; --ink:#33291F; --muted:#8C7B68;
+    --line:#EADFD0; --accent:#C75D3A; --accent-soft:#F6E6DD;
+    --green:#3E8E5A; --green-soft:#E4F1E8; --amber:#D89A1E; --amber-soft:#FBF0D6;
+    --red:#C0392B; --red-soft:#F8E2DE; --blue:#3A6EA5; --blue-soft:#E2ECF6;
+    --chip:#F3EADE; --chip-on:#C75D3A; --shadow:0 2px 10px rgba(80,55,30,.07);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:var(--bg); color:var(--ink); font-size:16px; line-height:1.4;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:430px; margin:0 auto; min-height:100vh; padding-bottom:96px;}
+
+  /* Header */
+  header{
+    position:sticky; top:0; z-index:20; background:var(--bg);
+    padding:14px 16px 10px; border-bottom:1px solid var(--line);
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  header .ttl{font-weight:800; font-size:18px; letter-spacing:-.3px}
+  header .ttl small{display:block; font-weight:600; font-size:11px; color:var(--muted); letter-spacing:.4px; text-transform:uppercase}
+  .who{
+    display:flex; align-items:center; gap:6px; background:var(--card);
+    border:1px solid var(--line); border-radius:999px; padding:5px 11px;
+    font-size:13px; font-weight:700; box-shadow:var(--shadow); cursor:pointer;
+  }
+  .who .dot{width:8px;height:8px;border-radius:50%;background:var(--green)}
+
+  main{padding:14px 16px}
+
+  .group{margin-bottom:18px}
+  .group > label.glabel{
+    display:flex; align-items:center; gap:7px; font-size:13px; font-weight:800;
+    text-transform:uppercase; letter-spacing:.5px; color:var(--muted); margin-bottom:9px;
+  }
+  .glabel .req{color:var(--accent); font-size:15px; line-height:1}
+
+  /* Chips */
+  .chips{display:flex; flex-wrap:wrap; gap:8px}
+  .chip{
+    border:1.5px solid var(--line); background:var(--card); color:var(--ink);
+    border-radius:12px; padding:11px 14px; font-size:15px; font-weight:600;
+    cursor:pointer; min-height:46px; display:flex; align-items:center; justify-content:center;
+    flex:0 0 auto; transition:all .12s; user-select:none;
+  }
+  .chip:active{transform:scale(.96)}
+  .chip.on{background:var(--accent); border-color:var(--accent); color:#fff; box-shadow:0 3px 8px rgba(199,93,58,.28)}
+  .chip.sm{padding:9px 12px; font-size:14px; min-height:40px}
+
+  /* Tyre size builder */
+  .size-display{
+    background:var(--accent-soft); border:1.5px solid var(--accent); border-radius:14px;
+    padding:14px; text-align:center; font-size:26px; font-weight:800; letter-spacing:1px;
+    color:var(--accent); margin-bottom:12px; min-height:58px;
+  }
+  .size-display .ph{color:var(--muted); font-size:16px; font-weight:600; letter-spacing:0}
+  .picker{margin-bottom:10px}
+  .picker .pl{font-size:12px; font-weight:700; color:var(--muted); margin-bottom:6px; text-transform:uppercase; letter-spacing:.4px}
+  .scroller{display:flex; gap:7px; overflow-x:auto; padding:2px 0 8px; scroll-snap-type:x proximity; -webkit-overflow-scrolling:touch}
+  .scroller::-webkit-scrollbar{height:0}
+  .scroller .chip{scroll-snap-align:center; min-width:54px}
+  .linkbtn{background:none;border:none;color:var(--accent);font-weight:700;font-size:14px;padding:6px 0;cursor:pointer;text-decoration:underline}
+  input[type=text],input[type=tel],input[type=number],input[type=date]{
+    width:100%; border:1.5px solid var(--line); border-radius:12px; padding:13px 14px;
+    font-size:16px; background:var(--card); color:var(--ink); font-family:inherit;
+  }
+  input:focus{outline:none; border-color:var(--accent)}
+
+  /* Expander */
+  .expander{
+    width:100%; background:var(--card); border:1.5px dashed var(--line); color:var(--accent);
+    border-radius:14px; padding:14px; font-size:15px; font-weight:800; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:18px;
+  }
+  .opt-body{display:none}
+  .opt-body.show{display:block}
+
+  /* Stepper */
+  .stepper{display:flex; align-items:center; gap:14px}
+  .stepper button{
+    width:48px;height:48px;border-radius:12px;border:1.5px solid var(--line);
+    background:var(--card);font-size:24px;font-weight:700;color:var(--accent);cursor:pointer;
+  }
+  .stepper .val{font-size:22px;font-weight:800;min-width:36px;text-align:center}
+
+  /* Save bar */
+  .savebar{
+    position:fixed; bottom:0; left:0; right:0; z-index:30;
+    background:linear-gradient(to top,var(--bg) 70%,rgba(250,245,238,0));
+    padding:12px 16px 16px; display:flex; justify-content:center;
+  }
+  .savebar .inner{width:100%; max-width:398px; display:flex; gap:10px}
+  .btn-primary{
+    flex:1; background:var(--accent); color:#fff; border:none; border-radius:14px;
+    padding:16px; font-size:17px; font-weight:800; cursor:pointer; box-shadow:0 4px 14px rgba(199,93,58,.32);
+  }
+  .btn-primary:disabled{background:#D9C8BC; box-shadow:none}
+  .btn-primary:active{transform:scale(.99)}
+
+  /* Tabs / bottom nav */
+  .tabbar{
+    position:fixed; bottom:0; left:0; right:0; z-index:25; background:var(--card);
+    border-top:1px solid var(--line); display:none;
+  }
+
+  /* Today log */
+  .seg{display:flex; gap:8px; margin-bottom:14px}
+  .seg button{
+    flex:1; padding:11px; border-radius:12px; border:1.5px solid var(--line);
+    background:var(--card); font-weight:700; font-size:14px; cursor:pointer; color:var(--muted);
+  }
+  .seg button.on{background:var(--ink); color:#fff; border-color:var(--ink)}
+  .log-card{
+    background:var(--card); border:1px solid var(--line); border-radius:14px;
+    padding:13px 14px; margin-bottom:10px; box-shadow:var(--shadow);
+  }
+  .log-card .top{display:flex; justify-content:space-between; align-items:flex-start; gap:8px}
+  .log-card .sz{font-size:19px; font-weight:800; letter-spacing:.5px}
+  .log-card .veh{font-size:14px; color:var(--muted); margin-top:2px}
+  .log-card .meta{display:flex; flex-wrap:wrap; gap:6px; margin-top:9px}
+  .tag{font-size:11px; font-weight:700; padding:3px 9px; border-radius:999px; background:var(--chip); color:var(--muted)}
+  .tag.mode{background:var(--blue-soft); color:var(--blue)}
+  .tag.origin{background:var(--amber-soft); color:#9a6a10}
+  .out{font-size:11px; font-weight:800; padding:4px 10px; border-radius:999px; white-space:nowrap}
+  .out.pend{background:var(--amber-soft); color:#9a6a10}
+  .out.sold{background:var(--green-soft); color:var(--green)}
+  .out.lost{background:var(--red-soft); color:var(--red)}
+  .sync{font-size:11px; font-weight:700; color:var(--muted); display:flex; align-items:center; gap:5px; margin-top:8px}
+  .sync .s-dot{width:7px;height:7px;border-radius:50%}
+  .s-dot.ok{background:var(--green)} .s-dot.wait{background:var(--amber)}
+  .empty{text-align:center; color:var(--muted); padding:50px 20px; font-size:15px}
+  .daysum{background:var(--accent-soft); border-radius:14px; padding:14px 16px; margin-bottom:14px; display:flex; justify-content:space-around; text-align:center}
+  .daysum .n{font-size:24px; font-weight:800; color:var(--accent)}
+  .daysum .l{font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.4px}
+
+  /* Modal */
+  .modal-bg{position:fixed; inset:0; background:rgba(40,28,18,.45); z-index:50; display:none; align-items:flex-end; justify-content:center}
+  .modal-bg.show{display:flex}
+  .modal{background:var(--card); width:100%; max-width:430px; border-radius:22px 22px 0 0; padding:22px 18px 26px; max-height:88vh; overflow-y:auto}
+  .modal h3{margin:0 0 4px; font-size:19px}
+  .modal p.sub{margin:0 0 16px; color:var(--muted); font-size:14px}
+  .staff-list{display:flex; flex-direction:column; gap:9px; margin-bottom:14px}
+  .staff-list button{padding:14px; border-radius:13px; border:1.5px solid var(--line); background:var(--card); font-size:16px; font-weight:700; cursor:pointer; text-align:left; display:flex; justify-content:space-between; align-items:center}
+  .staff-list button.on{border-color:var(--accent); background:var(--accent-soft); color:var(--accent)}
+  .addrow{display:flex; gap:8px; margin-top:6px}
+  .addrow input{flex:1}
+  .addrow button{padding:0 18px; border-radius:12px; border:none; background:var(--ink); color:#fff; font-weight:700; cursor:pointer}
+  .modal .btn-primary{width:100%; margin-top:8px}
+  .ghost{background:none;border:none;color:var(--muted);font-weight:700;font-size:14px;width:100%;padding:12px;cursor:pointer;margin-top:4px}
+
+  /* Toast */
+  .toast{position:fixed; left:50%; transform:translateX(-50%); bottom:120px; background:var(--ink); color:#fff; padding:13px 22px; border-radius:999px; font-weight:700; font-size:15px; z-index:60; opacity:0; transition:opacity .25s, transform .25s; pointer-events:none; box-shadow:0 6px 20px rgba(0,0,0,.25)}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(-6px)}
+
+  .view{display:none} .view.on{display:block}
+  .hint{font-size:12px;color:var(--muted);margin:-4px 0 9px}
+  .cfgwarn{background:var(--amber-soft);color:#7a5a10;font-size:12px;font-weight:600;padding:9px 12px;border-radius:10px;margin-bottom:14px;display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="ttl">Enquiry Logger<small id="branchLbl">Azaiba</small></div>
+    <div class="who" id="whoBtn"><span class="dot"></span><span id="whoName">Sign in</span></div>
+  </header>
+
+  <main>
+    <!-- NEW ENQUIRY VIEW -->
+    <section class="view on" id="vNew">
+      <div class="cfgwarn" id="cfgwarn">⚠️ Cloud sync not set up yet — entries are saved on this phone only. See setup steps.</div>
+
+      <!-- Tyre size -->
+      <div class="group">
+        <label class="glabel"><span class="req">●</span> Tyre Size</label>
+        <div class="size-display" id="sizeDisp"><span class="ph">Pick width · profile · rim</span></div>
+        <div id="sizePickers">
+          <div class="picker"><div class="pl">Width</div><div class="scroller" id="pWidth"></div></div>
+          <div class="picker"><div class="pl">Profile</div><div class="scroller" id="pProfile"></div></div>
+          <div class="picker"><div class="pl">Rim</div><div class="scroller" id="pRim"></div></div>
+        </div>
+        <button class="linkbtn" id="sizeTypeToggle">Type an odd size instead</button>
+        <div id="sizeTypeWrap" style="display:none;margin-top:8px">
+          <input type="text" id="sizeType" placeholder="e.g. 7.50R16 or 31x10.5R15" autocomplete="off">
+        </div>
+      </div>
+
+      <!-- Make / Model -->
+      <div class="group">
+        <label class="glabel"><span class="req">●</span> Vehicle Make</label>
+        <div class="chips" id="makeChips"></div>
+      </div>
+      <div class="group" id="modelGroup" style="display:none">
+        <label class="glabel">Model</label>
+        <div class="chips" id="modelChips"></div>
+        <div id="modelOtherWrap" style="display:none;margin-top:8px"><input type="text" id="modelOther" placeholder="Type model" autocomplete="off"></div>
+      </div>
+
+      <!-- Year -->
+      <div class="group">
+        <label class="glabel"><span class="req">●</span> Year of Manufacture</label>
+        <div class="scroller" id="yearChips"></div>
+      </div>
+
+      <!-- Current tyre origin -->
+      <div class="group">
+        <label class="glabel"><span class="req">●</span> Tyres Currently on Car</label>
+        <div class="chips" id="originChips"></div>
+      </div>
+
+      <!-- Mode -->
+      <div class="group">
+        <label class="glabel"><span class="req">●</span> Mode of Enquiry</label>
+        <div class="chips" id="modeChips"></div>
+      </div>
+
+      <!-- Brand asked (required) -->
+      <div class="group">
+        <label class="glabel"><span class="req">●</span> Brand Asked</label>
+        <div class="chips" id="brandChips"></div>
+      </div>
+
+      <!-- Quantity (required) -->
+      <div class="group">
+        <label class="glabel"><span class="req">●</span> Quantity</label>
+        <div class="stepper"><button id="qMinus">−</button><span class="val" id="qVal">4</span><button id="qPlus">＋</button><span style="font-size:13px;color:var(--muted);margin-left:4px">tyres</span></div>
+      </div>
+
+      <!-- Phone (required) -->
+      <div class="group">
+        <label class="glabel"><span class="req">●</span> Phone Number</label>
+        <input type="tel" id="custPhone" placeholder="Customer phone" autocomplete="off">
+      </div>
+
+      <!-- OPTIONAL -->
+      <button class="expander" id="optToggle"><span id="optIcon">＋</span> Add details (optional)</button>
+      <div class="opt-body" id="optBody">
+
+        <div class="group">
+          <label class="glabel">Outcome</label>
+          <div class="chips" id="outcomeChips"></div>
+        </div>
+
+        <div class="group" id="reasonGroup" style="display:none">
+          <label class="glabel">Reason lost</label>
+          <div class="chips" id="reasonChips"></div>
+        </div>
+
+        <div class="group">
+          <label class="glabel">Price quoted (OMR)</label>
+          <input type="number" id="price" inputmode="decimal" placeholder="Optional" step="0.1">
+        </div>
+
+        <div class="group">
+          <label class="glabel">Customer name</label>
+          <input type="text" id="custName" placeholder="Optional" autocomplete="off">
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TODAY VIEW -->
+    <section class="view" id="vToday">
+      <div class="seg">
+        <button class="on" id="segToday">Today</button>
+        <button id="segAll">All pending</button>
+      </div>
+      <div class="daysum" id="daySum"></div>
+      <div id="logList"></div>
+    </section>
+  </main>
+</div>
+
+<!-- Save bar (New view only) -->
+<div class="savebar" id="savebar">
+  <div class="inner">
+    <button class="btn-primary" id="saveBtn" disabled>Save Enquiry</button>
+    <button class="btn-primary" id="goTodayBtn" style="flex:0 0 auto;background:var(--ink);box-shadow:none;padding-left:18px;padding-right:18px">📋</button>
+  </div>
+</div>
+
+<!-- Staff modal -->
+<div class="modal-bg" id="staffModal">
+  <div class="modal">
+    <h3>Who's logging?</h3>
+    <p class="sub">Tap your name. Saved on this phone — set once.</p>
+    <div class="staff-list" id="staffList"></div>
+    <div class="addrow"><input type="text" id="newStaff" placeholder="Add a name" autocomplete="off"><button id="addStaffBtn">Add</button></div>
+    <button class="ghost" id="closeStaff">Done</button>
+  </div>
+</div>
+
+<!-- Edit outcome modal -->
+<div class="modal-bg" id="editModal">
+  <div class="modal">
+    <h3 id="editTitle">Update enquiry</h3>
+    <p class="sub" id="editSub"></p>
+    <div class="group"><label class="glabel">Outcome</label><div class="chips" id="eOutcome"></div></div>
+    <div class="group" id="eReasonGroup" style="display:none"><label class="glabel">Reason lost</label><div class="chips" id="eReason"></div></div>
+    <button class="btn-primary" id="editSave">Save changes</button>
+    <button class="ghost" id="editClose">Cancel</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   CONFIG  —  EDIT THIS ONE LINE AFTER DEPLOYING APPS SCRIPT
+   Paste your Google Apps Script Web App URL between the quotes.
+   Leave empty ('') to run in local-only mode.
+   ============================================================ */
+const APPS_SCRIPT_URL = '';
+const BRANCH = 'Azaiba';
+const DEFAULT_STAFF = ['Jabin'];   // staff can add their own names too
+
+/* ---------- storage keys ---------- */
+const K_STAFF='enq_staff_v1', K_ROSTER='enq_roster_v1', K_QUEUE='enq_queue_v1';
+
+/* ---------- data lists ---------- */
+const WIDTHS=[155,165,175,185,195,205,215,225,235,245,255,265,275,285,295,305,315,325];
+const PROFILES=[35,40,45,50,55,60,65,70,75,80,85];
+const RIMS=[13,14,15,16,17,18,19,20,21,22,23,24];
+const ORIGINS=['China','Thailand','Korea','Japan','European','American'];
+const MODES=['Walk-in','Call','WhatsApp'];
+const OUTCOMES=['Quote-pending','Sold','Lost'];
+const REASONS=['No stock','Wrong brand','Price too high','Just comparing','Wanted credit','Other'];
+const BRANDS=['Premium','Korea','China'];
+const MAKES={
+  'Toyota':['Land Cruiser','Prado','Hilux','Fortuner','Corolla','Camry','Yaris','RAV4','Hiace','Innova','FJ Cruiser','Other'],
+  'Nissan':['Patrol','Pathfinder','X-Trail','Altima','Sunny','Maxima','Navara','Kicks','Other'],
+  'Lexus':['LX','GX','RX','ES','IS','LS','NX','Other'],
+  'Mitsubishi':['Pajero','Montero','L200','Outlander','ASX','Lancer','Attrage','Other'],
+  'Hyundai':['Santa Fe','Tucson','Creta','Elantra','Accent','Sonata','H1','Other'],
+  'Kia':['Sportage','Sorento','Seltos','Cerato','Rio','Optima','Carnival','Other'],
+  'Mercedes':['C-Class','E-Class','S-Class','GLC','GLE','GLS','A-Class','G-Class','Other'],
+  'BMW':['3 Series','5 Series','7 Series','X1','X3','X5','X6','Other'],
+  'Land Rover':['Range Rover','RR Sport','Discovery','Defender','Evoque','Other'],
+  'Ford':['F-150','Explorer','Expedition','Edge','Ranger','Taurus','Other'],
+  'GMC':['Yukon','Sierra','Acadia','Terrain','Other'],
+  'Chevrolet':['Tahoe','Silverado','Captiva','Malibu','Traverse','Other'],
+  'Honda':['Accord','Civic','CR-V','Pilot','City','Other'],
+  'Mazda':['CX-5','CX-9','Mazda 6','Mazda 3','CX-3','Other'],
+  'Suzuki':['Jimny','Vitara','Swift','Ciaz','Other'],
+  'Isuzu':['D-Max','MU-X','Other'],
+  'Other':['Other']
+};
+
+/* ---------- state ---------- */
+let S={size:'',sizeMode:'pick',w:'',p:'',r:'',make:'',model:'',year:'',origin:'',mode:'Walk-in',
+       qty:4,brand:'',outcome:'Quote-pending',reason:'',price:'',custName:'',custPhone:''};
+let staff = localStorage.getItem(K_STAFF) || '';
+let roster = JSON.parse(localStorage.getItem(K_ROSTER) || 'null') || DEFAULT_STAFF.slice();
+let editingId = null;
+
+/* ---------- helpers ---------- */
+const $=id=>document.getElementById(id);
+function chip(text,val,cls){const d=document.createElement('div');d.className='chip'+(cls?' '+cls:'');d.textContent=text;d.dataset.val=val;return d;}
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1900);}
+function saveRoster(){localStorage.setItem(K_ROSTER,JSON.stringify(roster));}
+function getQueue(){return JSON.parse(localStorage.getItem(K_QUEUE)||'[]');}
+function setQueue(q){localStorage.setItem(K_QUEUE,JSON.stringify(q));}
+function todayStr(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+
+/* ---------- build pickers ---------- */
+function buildScroller(el,arr,key){arr.forEach(v=>{const c=chip(v,v);c.onclick=()=>{[...el.children].forEach(x=>x.classList.remove('on'));c.classList.add('on');S[key]=String(v);updateSize();};el.appendChild(c);});}
+function updateSize(){
+  if(S.sizeMode==='type'){S.size=$('sizeType').value.trim().toUpperCase();}
+  else if(S.w&&S.p&&S.r){S.size=S.w+'/'+S.p+'R'+S.r;}
+  else S.size='';
+  const disp=$('sizeDisp');
+  disp.innerHTML = S.size ? S.size : '<span class="ph">Pick width · profile · rim</span>';
+  checkValid();
+}
+function buildChips(el,arr,key,after){el.innerHTML='';arr.forEach(v=>{const c=chip(v,v);c.onclick=()=>{[...el.children].forEach(x=>x.classList.remove('on'));c.classList.add('on');S[key]=v;if(after)after(v);checkValid();};el.appendChild(c);});}
+
+function initUI(){
+  buildScroller($('pWidth'),WIDTHS,'w');
+  buildScroller($('pProfile'),PROFILES,'p');
+  buildScroller($('pRim'),RIMS,'r');
+
+  // makes
+  const mk=$('makeChips');
+  Object.keys(MAKES).forEach(m=>{const c=chip(m,m);c.onclick=()=>{[...mk.children].forEach(x=>x.classList.remove('on'));c.classList.add('on');S.make=m;S.model='';showModels(m);checkValid();};mk.appendChild(c);});
+
+  // years
+  const yc=$('yearChips');const yNow=new Date().getFullYear()+1;
+  for(let y=yNow;y>=2008;y--){const c=chip(y,y);c.onclick=()=>{[...yc.children].forEach(x=>x.classList.remove('on'));c.classList.add('on');S.year=String(y);checkValid();};yc.appendChild(c);}
+  const old=chip('Older','older');old.onclick=()=>{[...yc.children].forEach(x=>x.classList.remove('on'));old.classList.add('on');S.year='Older';checkValid();};yc.appendChild(old);
+
+  buildChips($('originChips'),ORIGINS,'origin');
+  buildChips($('modeChips'),MODES,'mode');
+  // preselect Walk-in
+  [...$('modeChips').children].find(c=>c.dataset.val==='Walk-in').classList.add('on');
+
+  buildChips($('outcomeChips'),OUTCOMES,'outcome',v=>{$('reasonGroup').style.display = v==='Lost'?'block':'none';});
+  [...$('outcomeChips').children].find(c=>c.dataset.val==='Quote-pending').classList.add('on');
+  buildChips($('reasonChips'),REASONS,'reason');
+  buildChips($('brandChips'),BRANDS,'brand');
+}
+
+function showModels(make){
+  const mg=$('modelGroup'),mc=$('modelChips');
+  mc.innerHTML='';S.model='';$('modelOtherWrap').style.display='none';
+  const list=MAKES[make]||['Other'];
+  list.forEach(m=>{const c=chip(m,m);c.onclick=()=>{[...mc.children].forEach(x=>x.classList.remove('on'));c.classList.add('on');S.model=m;$('modelOtherWrap').style.display=(m==='Other')?'block':'none';checkValid();};mc.appendChild(c);});
+  mg.style.display='block';
+}
+
+/* ---------- validation: minimum log ---------- */
+function checkValid(){
+  let model=S.model; if(model==='Other')model=$('modelOther').value.trim();
+  const phone=$('custPhone').value.trim();
+  const ok = S.size && S.make && model && S.year && S.origin && S.mode && S.brand && phone;
+  $('saveBtn').disabled=!ok;
+  return ok;
+}
+
+/* ---------- save ---------- */
+function buildRecord(){
+  let model=S.model==='Other'?($('modelOther').value.trim()||'Other'):S.model;
+  const now=new Date();
+  return {
+    id:'e'+now.getTime()+Math.floor(Math.random()*1000),
+    ts:now.toISOString(),
+    date:todayStr(),
+    staff:staff||'(unknown)',
+    branch:BRANCH,
+    size:S.size, make:S.make, model:model, year:S.year,
+    origin:S.origin, mode:S.mode, qty:S.qty, brand:S.brand,
+    outcome:S.outcome, reason:S.outcome==='Lost'?S.reason:'',
+    price:$('price').value||'',
+    custName:$('custName').value.trim(), custPhone:$('custPhone').value.trim(),
+    synced:false
+  };
+}
+function saveEnquiry(){
+  if(!checkValid())return;
+  if(!staff){openStaff();return;}
+  const rec=buildRecord();
+  const q=getQueue();q.unshift(rec);setQueue(q);
+  toast('Saved ✓  '+rec.size);
+  syncQueue();
+  resetForm();
+}
+function resetForm(){
+  S={size:'',sizeMode:'pick',w:'',p:'',r:'',make:'',model:'',year:'',origin:'',mode:'Walk-in',
+     qty:4,brand:'',outcome:'Quote-pending',reason:'',price:'',custName:'',custPhone:''};
+  document.querySelectorAll('#vNew .chip.on').forEach(c=>c.classList.remove('on'));
+  $('sizeDisp').innerHTML='<span class="ph">Pick width · profile · rim</span>';
+  $('sizeType').value='';$('modelGroup').style.display='none';$('reasonGroup').style.display='none';
+  $('price').value='';$('custName').value='';$('custPhone').value='';$('modelOther').value='';
+  $('qVal').textContent='4';
+  // restore defaults
+  [...$('modeChips').children].find(c=>c.dataset.val==='Walk-in').classList.add('on');
+  [...$('outcomeChips').children].find(c=>c.dataset.val==='Quote-pending').classList.add('on');
+  $('optBody').classList.remove('show');$('optIcon').textContent='＋';
+  checkValid();window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ---------- sync to Apps Script ---------- */
+function syncQueue(){
+  if(!APPS_SCRIPT_URL)return;
+  const q=getQueue();const pending=q.filter(r=>!r.synced);
+  if(!pending.length)return;
+  pending.forEach(rec=>{
+    fetch(APPS_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(rec)})
+      .then(()=>{const qq=getQueue();const i=qq.findIndex(x=>x.id===rec.id);if(i>-1){qq[i].synced=true;setQueue(qq);}if($('vToday').classList.contains('on'))renderLog();})
+      .catch(()=>{/* stays pending, retried next open */});
+  });
+}
+
+/* ---------- today log ---------- */
+let logFilter='today';
+function renderLog(){
+  const q=getQueue();
+  const rows = logFilter==='today' ? q.filter(r=>r.date===todayStr())
+              : q.filter(r=>r.outcome==='Quote-pending');
+  // day summary
+  const t=q.filter(r=>r.date===todayStr());
+  const sold=t.filter(r=>r.outcome==='Sold').length, lost=t.filter(r=>r.outcome==='Lost').length, pend=t.filter(r=>r.outcome==='Quote-pending').length;
+  $('daySum').innerHTML=`<div><div class="n">${t.length}</div><div class="l">Today</div></div>
+    <div><div class="n" style="color:var(--green)">${sold}</div><div class="l">Sold</div></div>
+    <div><div class="n" style="color:var(--red)">${lost}</div><div class="l">Lost</div></div>
+    <div><div class="n" style="color:var(--amber)">${pend}</div><div class="l">Pending</div></div>`;
+  const L=$('logList');
+  if(!rows.length){L.innerHTML='<div class="empty">No enquiries '+(logFilter==='today'?'logged today yet.':'pending.')+'<br>Tap a tyre size to start.</div>';return;}
+  L.innerHTML='';
+  rows.forEach(r=>{
+    const oc=r.outcome==='Sold'?'sold':r.outcome==='Lost'?'lost':'pend';
+    const card=document.createElement('div');card.className='log-card';
+    const tm=new Date(r.ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    card.innerHTML=`<div class="top">
+        <div><div class="sz">${r.size}</div><div class="veh">${r.make} ${r.model} · ${r.year}</div></div>
+        <div class="out ${oc}">${r.outcome}</div></div>
+      <div class="meta">
+        <span class="tag mode">${r.mode}</span>
+        <span class="tag origin">${r.origin}</span>
+        <span class="tag">×${r.qty}</span>
+        ${r.brand?`<span class="tag">${r.brand}</span>`:''}
+        ${r.custName?`<span class="tag">${r.custName}</span>`:''}
+        ${r.custPhone?`<span class="tag">📞 ${r.custPhone}</span>`:''}
+      </div>
+      <div class="sync"><span class="s-dot ${r.synced?'ok':'wait'}"></span>${r.synced?'Synced':(APPS_SCRIPT_URL?'Waiting to sync':'On this phone')} · ${tm} · ${r.staff}</div>`;
+    card.onclick=()=>openEdit(r.id);
+    L.appendChild(card);
+  });
+}
+
+/* ---------- edit outcome ---------- */
+function openEdit(id){
+  const r=getQueue().find(x=>x.id===id);if(!r)return;editingId=id;
+  $('editSub').textContent=`${r.size} · ${r.make} ${r.model}`;
+  const eo=$('eOutcome');eo.innerHTML='';
+  OUTCOMES.forEach(o=>{const c=chip(o,o);if(o===r.outcome)c.classList.add('on');c.onclick=()=>{[...eo.children].forEach(x=>x.classList.remove('on'));c.classList.add('on');$('eReasonGroup').style.display=o==='Lost'?'block':'none';};eo.appendChild(c);});
+  const er=$('eReason');er.innerHTML='';
+  REASONS.forEach(rs=>{const c=chip(rs,rs);if(rs===r.reason)c.classList.add('on');c.onclick=()=>{[...er.children].forEach(x=>x.classList.remove('on'));c.classList.add('on');};er.appendChild(c);});
+  $('eReasonGroup').style.display=r.outcome==='Lost'?'block':'none';
+  $('editModal').classList.add('show');
+}
+function saveEdit(){
+  const q=getQueue();const i=q.findIndex(x=>x.id===editingId);if(i<0)return;
+  const newOut=[...$('eOutcome').children].find(c=>c.classList.contains('on'))?.dataset.val||q[i].outcome;
+  const newReason=[...$('eReason').children].find(c=>c.classList.contains('on'))?.dataset.val||'';
+  q[i].outcome=newOut;q[i].reason=newOut==='Lost'?newReason:'';q[i].synced=false; // re-sync edit
+  setQueue(q);$('editModal').classList.remove('show');toast('Updated ✓');syncQueue();renderLog();
+}
+
+/* ---------- staff ---------- */
+function renderStaffList(){
+  const el=$('staffList');el.innerHTML='';
+  roster.forEach(n=>{const b=document.createElement('button');if(n===staff)b.className='on';b.innerHTML=`<span>${n}</span>${n===staff?'<span>✓</span>':''}`;b.onclick=()=>{staff=n;localStorage.setItem(K_STAFF,n);$('whoName').textContent=n;renderStaffList();};el.appendChild(b);});
+}
+function openStaff(){renderStaffList();$('staffModal').classList.add('show');}
+
+/* ---------- view switching ---------- */
+function showView(v){
+  $('vNew').classList.toggle('on',v==='new');
+  $('vToday').classList.toggle('on',v==='today');
+  $('savebar').style.display = v==='new'?'flex':'none';
+  if(v==='today'){renderLog();}
+}
+
+/* ---------- wire events ---------- */
+function wire(){
+  $('whoBtn').onclick=openStaff;
+  $('closeStaff').onclick=()=>{$('staffModal').classList.remove('show');};
+  $('addStaffBtn').onclick=()=>{const v=$('newStaff').value.trim();if(!v)return;if(!roster.includes(v))roster.push(v);saveRoster();staff=v;localStorage.setItem(K_STAFF,v);$('whoName').textContent=v;$('newStaff').value='';renderStaffList();};
+  $('newStaff').addEventListener('keydown',e=>{if(e.key==='Enter')$('addStaffBtn').click();});
+
+  $('sizeTypeToggle').onclick=()=>{
+    const typing=$('sizeTypeWrap').style.display==='none';
+    $('sizeTypeWrap').style.display=typing?'block':'none';
+    $('sizePickers').style.display=typing?'none':'block';
+    S.sizeMode=typing?'type':'pick';$('sizeTypeToggle').textContent=typing?'Use the pickers instead':'Type an odd size instead';
+    updateSize();
+  };
+  $('sizeType').addEventListener('input',updateSize);
+  $('modelOther').addEventListener('input',checkValid);
+  $('custPhone').addEventListener('input',checkValid);
+
+  $('optToggle').onclick=()=>{const b=$('optBody');const open=b.classList.toggle('show');$('optIcon').textContent=open?'−':'＋';};
+  $('qMinus').onclick=()=>{if(S.qty>1){S.qty--;$('qVal').textContent=S.qty;}};
+  $('qPlus').onclick=()=>{S.qty++;$('qVal').textContent=S.qty;};
+
+  $('saveBtn').onclick=saveEnquiry;
+  $('goTodayBtn').onclick=()=>showView('today');
+  $('segToday').onclick=()=>{logFilter='today';$('segToday').classList.add('on');$('segAll').classList.remove('on');renderLog();};
+  $('segAll').onclick=()=>{logFilter='all';$('segAll').classList.add('on');$('segToday').classList.remove('on');renderLog();};
+  $('editSave').onclick=saveEdit;
+  $('editClose').onclick=()=>$('editModal').classList.remove('show');
+
+  // tap header title to go back to New
+  $('branchLbl').parentElement.onclick=()=>showView('new');
+}
+
+/* ---------- init ---------- */
+window.addEventListener('DOMContentLoaded',()=>{
+  $('cfgwarn').style.display = APPS_SCRIPT_URL?'none':'block';
+  initUI();wire();
+  if(staff){$('whoName').textContent=staff;} else {openStaff();}
+  checkValid();syncQueue();
+});
+</script>
+</body>
+</html>

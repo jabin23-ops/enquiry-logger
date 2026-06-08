@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#C75D3A">
+<title>Find Customer — Azaiba</title>
+<style>
+  :root{
+    --bg:#FAF5EE; --card:#FFFFFF; --ink:#33291F; --muted:#8C7B68;
+    --line:#EADFD0; --accent:#C75D3A; --accent-soft:#F6E6DD;
+    --green:#3E8E5A; --green-soft:#E4F1E8; --amber:#D89A1E; --amber-soft:#FBF0D6;
+    --blue:#3A6EA5; --blue-soft:#E2ECF6; --shadow:0 2px 10px rgba(80,55,30,.07);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.4;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:430px;margin:0 auto;min-height:100vh;padding-bottom:40px}
+  header{position:sticky;top:0;z-index:20;background:var(--bg);padding:16px 16px 12px;border-bottom:1px solid var(--line)}
+  header .ttl{font-weight:800;font-size:19px;letter-spacing:-.3px}
+  header .ttl small{display:block;font-weight:600;font-size:11px;color:var(--muted);letter-spacing:.4px;text-transform:uppercase}
+  main{padding:16px}
+  .searchbar{display:flex;gap:8px;margin-bottom:8px}
+  .searchbar input{flex:1;border:1.5px solid var(--line);border-radius:13px;padding:15px 16px;font-size:18px;background:var(--card);color:var(--ink);font-family:inherit;letter-spacing:1px}
+  .searchbar input:focus{outline:none;border-color:var(--accent)}
+  .searchbar button{background:var(--accent);color:#fff;border:none;border-radius:13px;padding:0 20px;font-size:17px;font-weight:800;cursor:pointer}
+  .searchbar button:active{transform:scale(.98)}
+  .hint{font-size:12px;color:var(--muted);margin:2px 2px 0}
+  .state{text-align:center;color:var(--muted);padding:48px 20px;font-size:15px}
+  .spinner{width:34px;height:34px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .cust-head{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:var(--shadow);margin-bottom:14px}
+  .cust-head .nm{font-size:20px;font-weight:800}
+  .cust-head .ph{font-size:15px;color:var(--accent);font-weight:700;margin-top:2px;display:inline-block;text-decoration:none}
+  .kpis{display:flex;gap:8px;margin-top:14px}
+  .kpi{flex:1;background:var(--accent-soft);border-radius:12px;padding:10px 8px;text-align:center}
+  .kpi .n{font-size:19px;font-weight:800;color:var(--accent);line-height:1.1}
+  .kpi .l{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-top:3px}
+  .dates{display:flex;justify-content:space-between;margin-top:12px;font-size:12px;color:var(--muted)}
+  .dates b{color:var(--ink)}
+
+  .sec-label{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:18px 2px 9px}
+  .chips{display:flex;flex-wrap:wrap;gap:7px}
+  .chip{background:var(--blue-soft);color:var(--blue);border-radius:999px;padding:7px 13px;font-size:14px;font-weight:800;letter-spacing:.3px}
+  .chip.svc{background:var(--green-soft);color:var(--green);font-weight:700}
+
+  .bill{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 14px;margin-bottom:10px;box-shadow:var(--shadow)}
+  .bill .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .bill .dt{font-size:15px;font-weight:800}
+  .bill .amt{font-size:16px;font-weight:800;color:var(--accent);white-space:nowrap}
+  .bill .vch{font-size:11px;color:var(--muted);font-weight:600;margin-top:1px}
+  .bill ul{margin:10px 0 0;padding:0;list-style:none}
+  .bill li{font-size:14px;padding:5px 0;border-top:1px dashed var(--line);color:var(--ink)}
+  .bill li:first-child{border-top:none}
+  .bill .noitems{font-size:13px;color:var(--muted);margin-top:8px;font-style:italic}
+  .badge-new{display:inline-block;background:var(--green-soft);color:var(--green);font-weight:800;font-size:13px;padding:6px 14px;border-radius:999px;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="ttl">Find Customer<small>Azaiba · search by phone</small></div>
+  </header>
+  <main>
+    <div class="searchbar">
+      <input type="tel" id="q" inputmode="tel" placeholder="Phone number" autocomplete="off">
+      <button id="goBtn">Search</button>
+    </div>
+    <div class="hint" id="hint">Type a customer's phone and tap Search.</div>
+    <div id="result"></div>
+  </main>
+</div>
+
+<script>
+/* ===== CONFIG ===== */
+const ENDPOINT = 'https://script.google.com/macros/s/AKfycbxe6XB43KTv2WehhAwAHrkVc2Cg89hgHJvEgrDewy26DtjXG7iFWAAHjOXJyDycuMCy/exec';
+const KEY = 'gx-find-7Qm2p';
+
+const $=id=>document.getElementById(id);
+const GENERIC=/^(CIH|CASH|GLOBAL ORYX|^$)/i;
+
+function jsonp(params, cb){
+  const id='cb_'+Date.now()+Math.floor(Math.random()*10000);
+  let s;
+  const done=(data)=>{ try{cb(data);}finally{ delete window[id]; if(s&&s.parentNode)s.remove(); } };
+  window[id]=done;
+  s=document.createElement('script');
+  const qs=Object.entries(params).map(([k,v])=>k+'='+encodeURIComponent(v)).join('&');
+  s.src=ENDPOINT+'?'+qs+'&callback='+id;
+  s.onerror=()=>done({ok:false,error:'network'});
+  document.body.appendChild(s);
+  setTimeout(()=>{ if(window[id]) done({ok:false,error:'timeout'}); }, 20000);
+}
+
+function money(n){ return Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function niceDate(d){ if(!d)return '—'; const [y,m,da]=d.split('-'); const M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; return da+' '+(M[+m-1]||'')+' '+y; }
+function extractSizes(items){
+  const set=new Set();
+  items.forEach(it=>{ const m=it.match(/(\d{3})\s*\/\s*(\d{2})\s*R\s*(\d{2})/i); if(m) set.add(m[1]+'/'+m[2]+' R'+m[3]); });
+  return [...set];
+}
+
+function search(){
+  let q=$('q').value.replace(/\D/g,'');
+  if(q.length<6){ $('hint').textContent='Enter at least 6 digits.'; return; }
+  $('hint').textContent='';
+  $('result').innerHTML='<div class="state"><div class="spinner"></div>Looking up history…</div>';
+  jsonp({phone:q, key:KEY}, render);
+}
+
+function render(res){
+  const R=$('result');
+  if(!res || !res.ok){
+    R.innerHTML='<div class="state">Couldn’t reach the lookup service.<br><small>'+((res&&res.error)||'')+'</small><br><br>Try again in a moment.</div>';
+    return;
+  }
+  const bills=res.bills||[];
+  if(!bills.length){
+    R.innerHTML='<div class="state"><div style="font-size:40px;margin-bottom:8px">👋</div>No purchase history for this number.<div class="badge-new">New customer</div></div>';
+    return;
+  }
+  const total=bills.reduce((s,b)=>s+Number(b.a||0),0);
+  const name=(bills.map(b=>b.b).find(b=>b && !GENERIC.test(b))) || 'Cash customer';
+  const last=bills[0].d, first=bills[bills.length-1].d;
+  const allItems=[].concat(...bills.map(b=>b.i||[]));
+  const sizes=extractSizes(allItems);
+  // recurring services / non-size products
+  const svc={};
+  allItems.forEach(it=>{
+    const base=it.replace(/^\d+x\s*/,'').trim();
+    if(/(\d{3})\s*\/\s*(\d{2})\s*R\s*(\d{2})/i.test(base)) return;
+    const key=base.split(/[\[\(]/)[0].trim().toUpperCase();
+    if(key) svc[key]=(svc[key]||0)+1;
+  });
+  const topSvc=Object.entries(svc).sort((a,b)=>b[1]-a[1]).slice(0,4).map(x=>x[0]);
+
+  const phoneDigits=res.phone;
+  let html='';
+  html+='<div class="cust-head">'
+      +'<div class="nm">'+esc(name)+'</div>'
+      +'<a class="ph" href="tel:'+phoneDigits+'">📞 '+phoneDigits+'</a>'
+      +'<div class="kpis">'
+        +'<div class="kpi"><div class="n">OMR '+money(total)+'</div><div class="l">Lifetime</div></div>'
+        +'<div class="kpi"><div class="n">'+bills.length+'</div><div class="l">Visits</div></div>'
+        +'<div class="kpi"><div class="n">'+sizes.length+'</div><div class="l">Sizes</div></div>'
+      +'</div>'
+      +'<div class="dates"><span>First: <b>'+niceDate(first)+'</b></span><span>Last: <b>'+niceDate(last)+'</b></span></div>'
+    +'</div>';
+
+  if(sizes.length){
+    html+='<div class="sec-label">Tyre sizes they run</div><div class="chips">'+sizes.map(s=>'<span class="chip">'+esc(s)+'</span>').join('')+'</div>';
+  }
+  if(topSvc.length){
+    html+='<div class="sec-label">Also buys</div><div class="chips">'+topSvc.map(s=>'<span class="chip svc">'+esc(titlecase(s))+'</span>').join('')+'</div>';
+  }
+
+  html+='<div class="sec-label">Visit history ('+bills.length+')</div>';
+  bills.forEach(b=>{
+    html+='<div class="bill"><div class="top"><div><div class="dt">'+niceDate(b.d)+'</div><div class="vch">'+esc(b.v||'')+'</div></div><div class="amt">OMR '+money(b.a)+'</div></div>';
+    const items=(b.i||[]);
+    if(items.length){ html+='<ul>'+items.map(it=>'<li>'+esc(it)+'</li>').join('')+'</ul>'; }
+    else { html+='<div class="noitems">No line-item detail on this bill</div>'; }
+    html+='</div>';
+  });
+  R.innerHTML=html;
+}
+
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function titlecase(s){ return s.toLowerCase().replace(/\b\w/g,c=>c.toUpperCase()); }
+
+$('goBtn').onclick=search;
+$('q').addEventListener('keydown',e=>{ if(e.key==='Enter')search(); });
+// allow ?phone=... deep link (used by the enquiry logger cross-reference)
+window.addEventListener('DOMContentLoaded',()=>{
+  const u=new URLSearchParams(location.search); const p=u.get('phone');
+  if(p){ $('q').value=p; search(); }
+});
+</script>
+</body>
+</html>

@@ -373,7 +373,8 @@ function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show')
 function saveRoster(){localStorage.setItem(K_ROSTER,JSON.stringify(roster));}
 function getQueue(){return JSON.parse(localStorage.getItem(K_QUEUE)||'[]');}
 function setQueue(q){localStorage.setItem(K_QUEUE,JSON.stringify(q));}
-function todayStr(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function todayStr(){return new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Muscat'});}
+function omanStamp(d){return d.toLocaleString('en-GB',{timeZone:'Asia/Muscat',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true});}
 
 /* ---------- build pickers ---------- */
 function buildScroller(el,arr,key){arr.forEach(v=>{const c=chip(v,v);c.onclick=()=>{[...el.children].forEach(x=>x.classList.remove('on'));c.classList.add('on');S[key]=String(v);updateSize();};el.appendChild(c);});}
@@ -435,7 +436,8 @@ function buildRecord(){
   const now=new Date();
   return {
     id:'e'+now.getTime()+Math.floor(Math.random()*1000),
-    ts:now.toISOString(),
+    ts:omanStamp(now),
+    tsISO:now.toISOString(),
     date:todayStr(),
     staff:staff||'(unknown)',
     branch:BRANCH,
@@ -502,7 +504,7 @@ function renderLog(){
   rows.forEach(r=>{
     const oc=r.outcome==='Sold'?'sold':r.outcome==='Lost'?'lost':'pend';
     const card=document.createElement('div');card.className='log-card';
-    const tm=new Date(r.ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    const tm=new Date(r.tsISO||r.ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
     card.innerHTML=`<div class="top">
         <div><div class="sz">${r.size}</div><div class="veh">${r.make} ${r.model} · ${r.year}</div></div>
         <div class="out ${oc}">${r.outcome}</div></div>

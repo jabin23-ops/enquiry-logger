@@ -145,7 +145,7 @@ function post(obj){
 }
 
 function buildMsg(it){
-  const tpl=(it.type==='tyre'?TPL.tyre:TPL.align)||it.msg||'';
+  const tpl=(it.type==='tyre'?(TPL.tyre||DEF_TYRE):(TPL.align||DEF_ALIGN));
   return tpl.replace(/{greeting}/g, it.greet||'Hello!')
             .replace(/{size}/g, it.size||'')
             .replace(/{months}/g, it.months||'')
@@ -201,10 +201,12 @@ function markSent(it,card,btn){
 /* ---------- templates ---------- */
 const DEF_TYRE="{greeting} 👋 This is {shop}. Our records show the tyres you bought with us (size {size}) are getting close to replacement age. We have your size in stock at a good price — drop by whenever suits you and we'll sort it. 🚗";
 const DEF_ALIGN="{greeting} 👋 This is {shop}. It's been about {months} months since your last wheel alignment with us. A quick alignment check protects your tyres and keeps the car driving straight — we'd be glad to see you for it. 🚗";
-function loadConfig(){
+function loadConfig(cb){
   jsonp({config:1,key:KEY},res=>{
     if(res&&res.ok){TPL.tyre=res.tyre||DEF_TYRE;TPL.align=res.align||DEF_ALIGN;}
     else {TPL.tyre=DEF_TYRE;TPL.align=DEF_ALIGN;}
+    refreshVisibleLinks();
+    if(cb)cb();
   });
 }
 function openEdit(){$('tplTyre').value=TPL.tyre||DEF_TYRE;$('tplAlign').value=TPL.align||DEF_ALIGN;$('editModal').classList.add('show');}
@@ -258,8 +260,7 @@ $('actClose').onclick=()=>$('actModal').classList.remove('show');
 
 window.addEventListener('DOMContentLoaded',()=>{
   if(staff)$('whoName').textContent=staff; else openName();
-  loadConfig();
-  load(true);
+  loadConfig(()=>load(true));   // load templates first, THEN render cards
 });
 </script>
 </body>

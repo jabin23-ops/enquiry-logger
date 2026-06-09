@@ -171,6 +171,10 @@
   .cfgwarn{background:var(--amber-soft);color:#7a5a10;font-size:12px;font-weight:600;padding:9px 12px;border-radius:10px;margin-bottom:14px;display:none}
   .lookup-link{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:13px;padding:13px;font-size:15px;font-weight:800;color:var(--accent);text-decoration:none;margin-bottom:18px}
   .lookup-link:active{transform:scale(.99)}
+  .tool-links{margin:26px 0 4px;padding-top:18px;border-top:1px dashed var(--line)}
+  .tool-links .tl{display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:14px 16px;font-size:15px;font-weight:800;color:var(--ink);text-decoration:none;box-shadow:var(--shadow);margin-bottom:10px}
+  .tool-links .tl span.arw{color:var(--accent);font-size:18px}
+  .tool-links .tl small{display:block;font-weight:600;font-size:11px;color:var(--muted);margin-top:2px}
   .custlk{margin-top:8px;padding:11px 13px;border-radius:11px;font-size:13px;line-height:1.45}
   .custlk.loading{background:var(--chip);color:var(--muted)}
   .custlk.newc{background:var(--green-soft);color:var(--green);font-weight:700}
@@ -292,6 +296,17 @@
           <input type="text" id="custName" placeholder="Optional" autocomplete="off">
         </div>
 
+      </div>
+
+      <div class="tool-links">
+        <a class="tl" href="reminders.html" target="_blank">
+          <span>🔔 Today's reminders to send<small>Daily — message customers due for tyres / alignment</small></span>
+          <span class="arw">→</span>
+        </a>
+        <a class="tl" href="find-customer.html" target="_blank">
+          <span>🔍 Find a customer<small>Search a phone to see their history</small></span>
+          <span class="arw">→</span>
+        </a>
       </div>
     </section>
 

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#C75D3A">
+<title>Reminders — Azaiba</title>
+<style>
+  :root{
+    --bg:#FAF5EE; --card:#FFFFFF; --ink:#33291F; --muted:#8C7B68;
+    --line:#EADFD0; --accent:#C75D3A; --accent-soft:#F6E6DD;
+    --green:#25925a; --green-soft:#E4F1E8; --wa:#25D366;
+    --blue:#3A6EA5; --blue-soft:#E2ECF6; --shadow:0 2px 10px rgba(80,55,30,.07);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.4;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:430px;margin:0 auto;min-height:100vh;padding-bottom:40px}
+  header{position:sticky;top:0;z-index:20;background:var(--bg);padding:14px 16px 10px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:8px}
+  header .ttl{font-weight:800;font-size:18px;letter-spacing:-.3px}
+  header .ttl small{display:block;font-weight:600;font-size:11px;color:var(--muted);letter-spacing:.4px;text-transform:uppercase}
+  .who{display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-size:13px;font-weight:700;box-shadow:var(--shadow);cursor:pointer;white-space:nowrap}
+  .who .dot{width:8px;height:8px;border-radius:50%;background:var(--green)}
+  main{padding:14px 16px}
+  .summary{background:var(--accent-soft);border-radius:13px;padding:12px 14px;margin-bottom:14px;font-size:14px;font-weight:700;color:var(--accent);text-align:center}
+  .state{text-align:center;color:var(--muted);padding:46px 20px;font-size:15px}
+  .spinner{width:32px;height:32px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:14px;margin-bottom:11px;box-shadow:var(--shadow)}
+  .card.gone{opacity:.45}
+  .card .top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+  .card .nm{font-size:17px;font-weight:800}
+  .card .ph{font-size:13px;color:var(--muted);font-weight:600;margin-top:1px}
+  .badge{font-size:10px;font-weight:800;padding:4px 9px;border-radius:999px;white-space:nowrap;text-transform:uppercase;letter-spacing:.4px}
+  .badge.tyre{background:var(--accent-soft);color:var(--accent)}
+  .badge.align{background:var(--blue-soft);color:var(--blue)}
+  .card .lbl{font-size:14px;margin-top:9px;color:var(--ink)}
+  .card .meta{font-size:12px;color:var(--muted);margin-top:6px}
+  .acts{display:flex;gap:8px;margin-top:12px}
+  .acts a,.acts button{flex:1;border:none;border-radius:11px;padding:12px;font-size:14px;font-weight:800;cursor:pointer;text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px}
+  .btn-wa{background:var(--wa);color:#fff}
+  .btn-done{background:var(--card);color:var(--green);border:1.5px solid var(--green)!important}
+  .btn-done.on{background:var(--green);color:#fff}
+  .loadmore{width:100%;background:var(--ink);color:#fff;border:none;border-radius:13px;padding:14px;font-size:15px;font-weight:800;cursor:pointer;margin-top:6px}
+  .modal-bg{position:fixed;inset:0;background:rgba(40,28,18,.45);z-index:50;display:none;align-items:flex-end;justify-content:center}
+  .modal-bg.show{display:flex}
+  .modal{background:var(--card);width:100%;max-width:430px;border-radius:22px 22px 0 0;padding:22px 18px 26px}
+  .modal h3{margin:0 0 4px;font-size:19px}.modal p.sub{margin:0 0 16px;color:var(--muted);font-size:14px}
+  .modal input{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:13px 14px;font-size:16px;font-family:inherit}
+  .modal .save{width:100%;margin-top:12px;background:var(--accent);color:#fff;border:none;border-radius:13px;padding:14px;font-size:16px;font-weight:800;cursor:pointer}
+  .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:30px;background:var(--ink);color:#fff;padding:12px 20px;border-radius:999px;font-weight:700;font-size:14px;z-index:60;opacity:0;transition:opacity .25s;pointer-events:none}
+  .toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="ttl">Reminders<small>Who to contact today</small></div>
+    <div class="who" id="whoBtn"><span class="dot"></span><span id="whoName">Set name</span></div>
+  </header>
+  <main>
+    <div class="summary" id="summary">Loading today's list…</div>
+    <div id="list"></div>
+  </main>
+</div>
+
+<div class="modal-bg" id="nameModal">
+  <div class="modal">
+    <h3>Who's sending?</h3>
+    <p class="sub">Saved on this phone. Used to tag who contacted whom.</p>
+    <input type="text" id="nameInput" placeholder="Your name" autocomplete="off">
+    <button class="save" id="nameSave">Save</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const ENDPOINT='https://script.google.com/macros/s/AKfycbxe6XB43KTv2WehhAwAHrkVc2Cg89hgHJvEgrDewy26DtjXG7iFWAAHjOXJyDycuMCy/exec';
+const KEY='gx-find-7Qm2p';
+const CAP=20;
+const K_STAFF='rem_staff_v1';
+let offset=0, shown=new Set(), staff=localStorage.getItem(K_STAFF)||'';
+
+const $=id=>document.getElementById(id);
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1800);}
+function niceDate(s){if(!s)return '—';const [y,m,da]=s.split('-');const M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return da+' '+(M[+m-1]||'')+' '+y;}
+
+function jsonp(params, cb){
+  const id='cb_'+Date.now()+Math.floor(Math.random()*10000);let s;
+  const done=dt=>{try{cb(dt);}finally{delete window[id];if(s&&s.parentNode)s.remove();}};
+  window[id]=done;s=document.createElement('script');
+  const qs=Object.entries(params).map(([k,v])=>k+'='+encodeURIComponent(v)).join('&');
+  s.src=ENDPOINT+'?'+qs+'&callback='+id;s.onerror=()=>done({ok:false});
+  document.body.appendChild(s);setTimeout(()=>{if(window[id])done({ok:false,error:'timeout'});},20000);
+}
+
+function load(initial){
+  if(initial){$('list').innerHTML='<div class="state"><div class="spinner"></div>Building today’s list…</div>';$('summary').textContent='Loading…';}
+  jsonp({reminders:1,key:KEY,cap:CAP,offset:offset},res=>{
+    if(initial)$('list').innerHTML='';
+    if(!res||!res.ok){$('summary').textContent='Couldn’t reach the list. Try again.';return;}
+    const items=(res.items||[]).filter(it=>!shown.has(it.ph));
+    if(initial && !items.length){$('list').innerHTML='<div class="state">🎉 All caught up — no one to contact right now.</div>';}
+    $('summary').innerHTML=`<b>${res.total||0}</b> customers due &middot; showing in batches of ${CAP}`;
+    items.forEach(addCard);
+    offset+=CAP;
+    const more=document.getElementById('loadmore');if(more)more.remove();
+    if(items.length){
+      const b=document.createElement('button');b.className='loadmore';b.id='loadmore';b.textContent='Load next '+CAP;
+      b.onclick=()=>load(false);$('list').appendChild(b);
+    }
+  });
+}
+
+function addCard(it){
+  shown.add(it.ph);
+  const card=document.createElement('div');card.className='card';card.dataset.ph=it.ph;
+  const nm=it.name?esc(it.name):'Cash customer';
+  const waLink='https://wa.me/'+it.wa+'?text='+encodeURIComponent(it.msg);
+  card.innerHTML=`<div class="top">
+      <div><div class="nm">${nm}</div><div class="ph">📞 ${esc(it.ph)}</div></div>
+      <div class="badge ${it.type}">${it.type==='tyre'?'Tyre':'Alignment'}</div></div>
+    <div class="lbl">${esc(it.label)}</div>
+    <div class="meta">Last visit ${niceDate(it.last)} &middot; lifetime OMR ${Number(it.spend).toFixed(0)}</div>
+    <div class="acts">
+      <a class="btn-wa" href="${waLink}" target="_blank" rel="noopener">💬 WhatsApp</a>
+      <button class="btn-done">✓ Mark sent</button>
+    </div>`;
+  const doneBtn=card.querySelector('.btn-done');
+  doneBtn.onclick=()=>markSent(it,card,doneBtn);
+  const before=document.getElementById('loadmore');
+  if(before)$('list').insertBefore(card,before); else $('list').appendChild(card);
+}
+
+function markSent(it,card,btn){
+  btn.classList.add('on');btn.textContent='✓ Sent';
+  card.classList.add('gone');
+  // log to backend (fire and forget)
+  fetch(ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify({kind:'reminder_sent',ph:it.ph,type:it.type,staff:staff||'(unset)',
+      ts:new Date().toISOString()})}).catch(()=>{});
+  toast('Logged ✓');
+  setTimeout(()=>{card.style.height='0';card.style.margin='0';card.style.padding='0';card.style.overflow='hidden';},900);
+}
+
+// staff name
+function openName(){$('nameInput').value=staff;$('nameModal').classList.add('show');setTimeout(()=>$('nameInput').focus(),100);}
+$('whoBtn').onclick=openName;
+$('nameSave').onclick=()=>{const v=$('nameInput').value.trim();if(v){staff=v;localStorage.setItem(K_STAFF,v);$('whoName').textContent=v;}$('nameModal').classList.remove('show');};
+$('nameInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('nameSave').click();});
+
+window.addEventListener('DOMContentLoaded',()=>{
+  if(staff)$('whoName').textContent=staff; else openName();
+  load(true);
+});
+</script>
+</body>
+</html>

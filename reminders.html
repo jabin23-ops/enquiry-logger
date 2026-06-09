@@ -18,39 +18,54 @@
   html,body{margin:0;padding:0}
   body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.4;-webkit-font-smoothing:antialiased}
   .wrap{max-width:430px;margin:0 auto;min-height:100vh;padding-bottom:40px}
-  header{position:sticky;top:0;z-index:20;background:var(--bg);padding:14px 16px 10px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:8px}
-  header .ttl{font-weight:800;font-size:18px;letter-spacing:-.3px}
-  header .ttl small{display:block;font-weight:600;font-size:11px;color:var(--muted);letter-spacing:.4px;text-transform:uppercase}
-  .who{display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-size:13px;font-weight:700;box-shadow:var(--shadow);cursor:pointer;white-space:nowrap}
-  .who .dot{width:8px;height:8px;border-radius:50%;background:var(--green)}
+  header{position:sticky;top:0;z-index:20;background:var(--bg);padding:13px 14px 10px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:8px}
+  header .ttl{font-weight:800;font-size:17px;letter-spacing:-.3px}
+  header .ttl small{display:block;font-weight:600;font-size:10px;color:var(--muted);letter-spacing:.4px;text-transform:uppercase}
+  .hdr-actions{display:flex;align-items:center;gap:7px}
+  .iconbtn{width:38px;height:38px;border-radius:11px;border:1px solid var(--line);background:var(--card);font-size:17px;cursor:pointer;box-shadow:var(--shadow)}
+  .who{display:flex;align-items:center;gap:5px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:12px;font-weight:700;box-shadow:var(--shadow);cursor:pointer;white-space:nowrap;max-width:104px;overflow:hidden;text-overflow:ellipsis}
+  .who .dot{width:7px;height:7px;border-radius:50%;background:var(--green);flex:0 0 auto}
   main{padding:14px 16px}
   .summary{background:var(--accent-soft);border-radius:13px;padding:12px 14px;margin-bottom:14px;font-size:14px;font-weight:700;color:var(--accent);text-align:center}
   .state{text-align:center;color:var(--muted);padding:46px 20px;font-size:15px}
   .spinner{width:32px;height:32px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px}
   @keyframes spin{to{transform:rotate(360deg)}}
 
-  .card{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:14px;margin-bottom:11px;box-shadow:var(--shadow)}
-  .card.gone{opacity:.45}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:14px;margin-bottom:11px;box-shadow:var(--shadow);transition:height .3s,opacity .3s,padding .3s,margin .3s}
+  .card.gone{opacity:.4}
   .card .top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
   .card .nm{font-size:17px;font-weight:800}
   .card .ph{font-size:13px;color:var(--muted);font-weight:600;margin-top:1px}
   .badge{font-size:10px;font-weight:800;padding:4px 9px;border-radius:999px;white-space:nowrap;text-transform:uppercase;letter-spacing:.4px}
   .badge.tyre{background:var(--accent-soft);color:var(--accent)}
   .badge.align{background:var(--blue-soft);color:var(--blue)}
-  .card .lbl{font-size:14px;margin-top:9px;color:var(--ink)}
+  .card .lbl{font-size:14px;margin-top:9px}
   .card .meta{font-size:12px;color:var(--muted);margin-top:6px}
   .acts{display:flex;gap:8px;margin-top:12px}
   .acts a,.acts button{flex:1;border:none;border-radius:11px;padding:12px;font-size:14px;font-weight:800;cursor:pointer;text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px}
   .btn-wa{background:var(--wa);color:#fff}
-  .btn-done{background:var(--card);color:var(--green);border:1.5px solid var(--green)!important}
-  .btn-done.on{background:var(--green);color:#fff}
+  .btn-done{background:var(--card);color:var(--muted);border:1.5px solid var(--line)!important}
+  .btn-done.ready{color:var(--green);border-color:var(--green)!important}
+  .btn-done.on{background:var(--green);color:#fff;border-color:var(--green)!important}
   .loadmore{width:100%;background:var(--ink);color:#fff;border:none;border-radius:13px;padding:14px;font-size:15px;font-weight:800;cursor:pointer;margin-top:6px}
+
   .modal-bg{position:fixed;inset:0;background:rgba(40,28,18,.45);z-index:50;display:none;align-items:flex-end;justify-content:center}
   .modal-bg.show{display:flex}
-  .modal{background:var(--card);width:100%;max-width:430px;border-radius:22px 22px 0 0;padding:22px 18px 26px}
-  .modal h3{margin:0 0 4px;font-size:19px}.modal p.sub{margin:0 0 16px;color:var(--muted);font-size:14px}
-  .modal input{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:13px 14px;font-size:16px;font-family:inherit}
-  .modal .save{width:100%;margin-top:12px;background:var(--accent);color:#fff;border:none;border-radius:13px;padding:14px;font-size:16px;font-weight:800;cursor:pointer}
+  .modal{background:var(--card);width:100%;max-width:430px;border-radius:22px 22px 0 0;padding:22px 18px 26px;max-height:90vh;overflow-y:auto}
+  .modal h3{margin:0 0 4px;font-size:19px}.modal p.sub{margin:0 0 14px;color:var(--muted);font-size:13px}
+  .modal label{display:block;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin:14px 0 6px}
+  .modal input,.modal textarea{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:12px 13px;font-size:15px;font-family:inherit;line-height:1.45}
+  .modal textarea{min-height:120px;resize:vertical}
+  .ph-help{font-size:11px;color:var(--muted);margin-top:5px}
+  .ph-help code{background:var(--accent-soft);color:var(--accent);padding:1px 5px;border-radius:5px;font-weight:700}
+  .save{width:100%;margin-top:16px;background:var(--accent);color:#fff;border:none;border-radius:13px;padding:14px;font-size:16px;font-weight:800;cursor:pointer}
+  .ghost{width:100%;background:none;border:none;color:var(--muted);font-weight:700;font-size:14px;padding:12px;cursor:pointer;margin-top:2px}
+  .act-row{display:flex;justify-content:space-between;padding:11px 2px;border-bottom:1px solid var(--line);font-size:15px}
+  .act-row b{font-weight:800}
+  .act-big{display:flex;gap:10px;margin:6px 0 14px}
+  .act-kpi{flex:1;background:var(--accent-soft);border-radius:12px;padding:12px;text-align:center}
+  .act-kpi .n{font-size:24px;font-weight:800;color:var(--accent)}
+  .act-kpi .l{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase}
   .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:30px;background:var(--ink);color:#fff;padding:12px 20px;border-radius:999px;font-weight:700;font-size:14px;z-index:60;opacity:0;transition:opacity .25s;pointer-events:none}
   .toast.show{opacity:1}
 </style>
@@ -59,7 +74,11 @@
 <div class="wrap">
   <header>
     <div class="ttl">Reminders<small>Who to contact today</small></div>
-    <div class="who" id="whoBtn"><span class="dot"></span><span id="whoName">Set name</span></div>
+    <div class="hdr-actions">
+      <button class="iconbtn" id="actBtn" title="Activity">📊</button>
+      <button class="iconbtn" id="editBtn" title="Edit message">✏️</button>
+      <div class="who" id="whoBtn"><span class="dot"></span><span id="whoName">Set name</span></div>
+    </div>
   </header>
   <main>
     <div class="summary" id="summary">Loading today's list…</div>
@@ -67,22 +86,46 @@
   </main>
 </div>
 
-<div class="modal-bg" id="nameModal">
-  <div class="modal">
-    <h3>Who's sending?</h3>
-    <p class="sub">Saved on this phone. Used to tag who contacted whom.</p>
-    <input type="text" id="nameInput" placeholder="Your name" autocomplete="off">
-    <button class="save" id="nameSave">Save</button>
-  </div>
-</div>
+<!-- name -->
+<div class="modal-bg" id="nameModal"><div class="modal">
+  <h3>Who's sending?</h3><p class="sub">Saved on this phone. Tags who contacted whom (for tracking).</p>
+  <input type="text" id="nameInput" placeholder="Your name" autocomplete="off">
+  <button class="save" id="nameSave">Save</button>
+</div></div>
+
+<!-- editor -->
+<div class="modal-bg" id="editModal"><div class="modal">
+  <h3>Edit the message</h3>
+  <p class="sub">Changes save centrally and apply to <b>every staff phone</b> from now on. Use the tags below — they fill in automatically.</p>
+  <label>Tyre-replacement message</label>
+  <textarea id="tplTyre"></textarea>
+  <div class="ph-help">Tags: <code>{greeting}</code> <code>{size}</code> <code>{shop}</code></div>
+  <label>Alignment message</label>
+  <textarea id="tplAlign"></textarea>
+  <div class="ph-help">Tags: <code>{greeting}</code> <code>{months}</code> <code>{shop}</code></div>
+  <button class="save" id="tplSave">Save for all staff</button>
+  <button class="ghost" id="tplReset">Reset to default</button>
+  <button class="ghost" id="editClose">Cancel</button>
+</div></div>
+
+<!-- activity -->
+<div class="modal-bg" id="actModal"><div class="modal">
+  <h3>Activity</h3><p class="sub">Reminders marked sent by staff.</p>
+  <div id="actBody"><div class="state"><div class="spinner"></div></div></div>
+  <button class="ghost" id="actClose">Close</button>
+</div></div>
+
 <div class="toast" id="toast"></div>
 
 <script>
 const ENDPOINT='https://script.google.com/macros/s/AKfycbxe6XB43KTv2WehhAwAHrkVc2Cg89hgHJvEgrDewy26DtjXG7iFWAAHjOXJyDycuMCy/exec';
 const KEY='gx-find-7Qm2p';
+const SHOP='Global Oryx Tyres, Azaiba';
 const CAP=20;
 const K_STAFF='rem_staff_v1';
 let offset=0, shown=new Set(), staff=localStorage.getItem(K_STAFF)||'';
+let TPL={tyre:'',align:''};
+let lastItems={}; // ph -> item, to rebuild wa links after a template edit
 
 const $=id=>document.getElementById(id);
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
@@ -97,7 +140,19 @@ function jsonp(params, cb){
   s.src=ENDPOINT+'?'+qs+'&callback='+id;s.onerror=()=>done({ok:false});
   document.body.appendChild(s);setTimeout(()=>{if(window[id])done({ok:false,error:'timeout'});},20000);
 }
+function post(obj){
+  fetch(ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(obj)}).catch(()=>{});
+}
 
+function buildMsg(it){
+  const tpl=(it.type==='tyre'?TPL.tyre:TPL.align)||it.msg||'';
+  return tpl.replace(/{greeting}/g, it.greet||'Hello!')
+            .replace(/{size}/g, it.size||'')
+            .replace(/{months}/g, it.months||'')
+            .replace(/{shop}/g, SHOP);
+}
+
+/* ---------- list ---------- */
 function load(initial){
   if(initial){$('list').innerHTML='<div class="state"><div class="spinner"></div>Building today’s list…</div>';$('summary').textContent='Loading…';}
   jsonp({reminders:1,key:KEY,cap:CAP,offset:offset},res=>{
@@ -105,22 +160,21 @@ function load(initial){
     if(!res||!res.ok){$('summary').textContent='Couldn’t reach the list. Try again.';return;}
     const items=(res.items||[]).filter(it=>!shown.has(it.ph));
     if(initial && !items.length){$('list').innerHTML='<div class="state">🎉 All caught up — no one to contact right now.</div>';}
-    $('summary').innerHTML=`<b>${res.total||0}</b> customers due &middot; showing in batches of ${CAP}`;
+    $('summary').innerHTML=`<b>${res.total||0}</b> customers due &middot; batches of ${CAP}`;
     items.forEach(addCard);
     offset+=CAP;
-    const more=document.getElementById('loadmore');if(more)more.remove();
+    const old=document.getElementById('loadmore');if(old)old.remove();
     if(items.length){
       const b=document.createElement('button');b.className='loadmore';b.id='loadmore';b.textContent='Load next '+CAP;
       b.onclick=()=>load(false);$('list').appendChild(b);
     }
   });
 }
-
 function addCard(it){
-  shown.add(it.ph);
+  shown.add(it.ph);lastItems[it.ph]=it;
   const card=document.createElement('div');card.className='card';card.dataset.ph=it.ph;
   const nm=it.name?esc(it.name):'Cash customer';
-  const waLink='https://wa.me/'+it.wa+'?text='+encodeURIComponent(it.msg);
+  const waLink='https://wa.me/'+it.wa+'?text='+encodeURIComponent(buildMsg(it));
   card.innerHTML=`<div class="top">
       <div><div class="nm">${nm}</div><div class="ph">📞 ${esc(it.ph)}</div></div>
       <div class="badge ${it.type}">${it.type==='tyre'?'Tyre':'Alignment'}</div></div>
@@ -128,33 +182,83 @@ function addCard(it){
     <div class="meta">Last visit ${niceDate(it.last)} &middot; lifetime OMR ${Number(it.spend).toFixed(0)}</div>
     <div class="acts">
       <a class="btn-wa" href="${waLink}" target="_blank" rel="noopener">💬 WhatsApp</a>
-      <button class="btn-done">✓ Mark sent</button>
+      <button class="btn-done" disabled>Open WhatsApp first</button>
     </div>`;
-  const doneBtn=card.querySelector('.btn-done');
-  doneBtn.onclick=()=>markSent(it,card,doneBtn);
+  const wa=card.querySelector('.btn-wa'), done=card.querySelector('.btn-done');
+  wa.addEventListener('click',()=>{done.disabled=false;done.classList.add('ready');done.textContent='✓ Mark sent';});
+  done.onclick=()=>{if(done.disabled)return;markSent(it,card,done);};
   const before=document.getElementById('loadmore');
   if(before)$('list').insertBefore(card,before); else $('list').appendChild(card);
 }
-
 function markSent(it,card,btn){
-  btn.classList.add('on');btn.textContent='✓ Sent';
-  card.classList.add('gone');
-  // log to backend (fire and forget)
-  fetch(ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},
-    body:JSON.stringify({kind:'reminder_sent',ph:it.ph,type:it.type,staff:staff||'(unset)',
-      ts:new Date().toISOString()})}).catch(()=>{});
+  btn.classList.remove('ready');btn.classList.add('on');btn.textContent='✓ Sent';btn.disabled=true;
+  post({kind:'reminder_sent',ph:it.ph,type:it.type,staff:staff||'(unset)',ts:new Date().toISOString()});
   toast('Logged ✓');
-  setTimeout(()=>{card.style.height='0';card.style.margin='0';card.style.padding='0';card.style.overflow='hidden';},900);
+  card.classList.add('gone');
+  setTimeout(()=>{card.style.height='0';card.style.margin='0';card.style.padding='0';card.style.borderWidth='0';card.style.overflow='hidden';},1100);
 }
 
-// staff name
+/* ---------- templates ---------- */
+const DEF_TYRE="{greeting} 👋 This is {shop}. Our records show the tyres you bought with us (size {size}) are getting close to replacement age. We have your size in stock at a good price — drop by whenever suits you and we'll sort it. 🚗";
+const DEF_ALIGN="{greeting} 👋 This is {shop}. It's been about {months} months since your last wheel alignment with us. A quick alignment check protects your tyres and keeps the car driving straight — we'd be glad to see you for it. 🚗";
+function loadConfig(){
+  jsonp({config:1,key:KEY},res=>{
+    if(res&&res.ok){TPL.tyre=res.tyre||DEF_TYRE;TPL.align=res.align||DEF_ALIGN;}
+    else {TPL.tyre=DEF_TYRE;TPL.align=DEF_ALIGN;}
+  });
+}
+function openEdit(){$('tplTyre').value=TPL.tyre||DEF_TYRE;$('tplAlign').value=TPL.align||DEF_ALIGN;$('editModal').classList.add('show');}
+function saveTpl(){
+  TPL.tyre=$('tplTyre').value.trim()||DEF_TYRE;
+  TPL.align=$('tplAlign').value.trim()||DEF_ALIGN;
+  post({kind:'config',key:KEY,tyre:TPL.tyre,align:TPL.align});
+  toast('Saved for all staff ✓');
+  $('editModal').classList.remove('show');
+  refreshVisibleLinks();
+}
+function refreshVisibleLinks(){
+  document.querySelectorAll('.card').forEach(card=>{
+    const it=lastItems[card.dataset.ph];if(!it)return;
+    const wa=card.querySelector('.btn-wa');if(wa)wa.href='https://wa.me/'+it.wa+'?text='+encodeURIComponent(buildMsg(it));
+  });
+}
+
+/* ---------- activity ---------- */
+function openActivity(){
+  $('actModal').classList.add('show');
+  $('actBody').innerHTML='<div class="state"><div class="spinner"></div></div>';
+  jsonp({activity:1,key:KEY},res=>{
+    if(!res||!res.ok){$('actBody').innerHTML='<div class="state">Couldn’t load activity.</div>';return;}
+    let h=`<div class="act-big">
+      <div class="act-kpi"><div class="n">${res.today||0}</div><div class="l">Today</div></div>
+      <div class="act-kpi"><div class="n">${res.week||0}</div><div class="l">7 days</div></div>
+      <div class="act-kpi"><div class="n">${res.total||0}</div><div class="l">All time</div></div></div>`;
+    const td=res.byToday||{}, keys=Object.keys(td).sort((a,b)=>td[b]-td[a]);
+    h+='<label style="margin-top:4px">Sent today by staff</label>';
+    if(!keys.length) h+='<div class="state" style="padding:18px">No reminders sent yet today.</div>';
+    else keys.forEach(k=>{h+=`<div class="act-row"><span>${esc(k)}</span><b>${td[k]}</b></div>`;});
+    const wk=res.byWeek||{}, wkeys=Object.keys(wk).sort((a,b)=>wk[b]-wk[a]);
+    if(wkeys.length){h+='<label>Last 7 days by staff</label>';wkeys.forEach(k=>{h+=`<div class="act-row"><span>${esc(k)}</span><b>${wk[k]}</b></div>`;});}
+    $('actBody').innerHTML=h;
+  });
+}
+
+/* ---------- staff name ---------- */
 function openName(){$('nameInput').value=staff;$('nameModal').classList.add('show');setTimeout(()=>$('nameInput').focus(),100);}
 $('whoBtn').onclick=openName;
 $('nameSave').onclick=()=>{const v=$('nameInput').value.trim();if(v){staff=v;localStorage.setItem(K_STAFF,v);$('whoName').textContent=v;}$('nameModal').classList.remove('show');};
 $('nameInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('nameSave').click();});
 
+$('editBtn').onclick=openEdit;
+$('tplSave').onclick=saveTpl;
+$('tplReset').onclick=()=>{$('tplTyre').value=DEF_TYRE;$('tplAlign').value=DEF_ALIGN;};
+$('editClose').onclick=()=>$('editModal').classList.remove('show');
+$('actBtn').onclick=openActivity;
+$('actClose').onclick=()=>$('actModal').classList.remove('show');
+
 window.addEventListener('DOMContentLoaded',()=>{
   if(staff)$('whoName').textContent=staff; else openName();
+  loadConfig();
   load(true);
 });
 </script>

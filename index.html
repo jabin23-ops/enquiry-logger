@@ -584,6 +584,13 @@ function loadAllStaff(){
     $('logList').innerHTML='<div class="hint" style="margin:0 0 10px">Newest first · everyone’s entries · '+rows.length+' shown</div>'+rows.map(staffCard).join('');
   });
 }
+function fmtTs(ts){
+  if(!ts) return '';
+  if(/^\d{4}-\d{2}-\d{2}T/.test(String(ts))){   // ISO from a Sheets date cell -> show Oman time
+    try{return new Date(ts).toLocaleString('en-GB',{timeZone:'Asia/Muscat',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true});}catch(e){}
+  }
+  return String(ts);
+}
 function staffCard(r){
   const oc=r.outcome==='Sold'?'sold':r.outcome==='Lost'?'lost':'pend';
   const veh=[r.make,r.model].filter(Boolean).join(' ')+(r.year?' · '+r.year:'');
@@ -597,7 +604,7 @@ function staffCard(r){
       ${r.brand?`<span class="tag">${esc(r.brand)}</span>`:''}
       ${r.custPhone?`<span class="tag">📞 ${esc(String(r.custPhone))}</span>`:''}
     </div>
-    <div class="sync"><span class="s-dot ok"></span>${esc(String(r.ts||''))} · <b>${esc(r.staff||'(unknown)')}</b></div></div>`;
+    <div class="sync"><span class="s-dot ok"></span>${esc(fmtTs(r.ts))} · <b>${esc(r.staff||'(unknown)')}</b></div></div>`;
 }
 function renderLog(){
   $('daySum').style.display='';

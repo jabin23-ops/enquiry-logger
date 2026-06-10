@@ -313,8 +313,9 @@
     <!-- TODAY VIEW -->
     <section class="view" id="vToday">
       <div class="seg">
-        <button class="on" id="segToday">Today</button>
-        <button id="segAll">All pending</button>
+        <button class="on" id="segToday">My today</button>
+        <button id="segAll">My pending</button>
+        <button id="segStaffAll">All staff</button>
       </div>
       <div class="daysum" id="daySum"></div>
       <div id="logList"></div>
@@ -572,7 +573,34 @@ function syncQueue(){
 
 /* ---------- today log ---------- */
 let logFilter='today';
+function loadAllStaff(){
+  $('daySum').style.display='none';
+  $('logList').innerHTML='<div class="empty">Loading all staff entries…</div>';
+  if(!APPS_SCRIPT_URL){$('logList').innerHTML='<div class="empty">Cloud sync not set up — all-staff view needs it.</div>';return;}
+  jsonp({enquiries:1,key:FIND_KEY,limit:80},res=>{
+    if(!res||!res.ok){$('logList').innerHTML='<div class="empty">Couldn’t load. Try again.</div>';return;}
+    const rows=res.rows||[];
+    if(!rows.length){$('logList').innerHTML='<div class="empty">No enquiries logged yet.</div>';return;}
+    $('logList').innerHTML='<div class="hint" style="margin:0 0 10px">Newest first · everyone’s entries · '+rows.length+' shown</div>'+rows.map(staffCard).join('');
+  });
+}
+function staffCard(r){
+  const oc=r.outcome==='Sold'?'sold':r.outcome==='Lost'?'lost':'pend';
+  const veh=[r.make,r.model].filter(Boolean).join(' ')+(r.year?' · '+r.year:'');
+  return `<div class="log-card"><div class="top">
+      <div><div class="sz">${esc(r.size||'')}</div><div class="veh">${esc(veh)}</div></div>
+      <div class="out ${oc}">${esc(r.outcome||'')}</div></div>
+    <div class="meta">
+      ${r.mode?`<span class="tag mode">${esc(r.mode)}</span>`:''}
+      ${r.origin?`<span class="tag origin">${esc(r.origin)}</span>`:''}
+      ${r.qty?`<span class="tag">×${esc(String(r.qty))}</span>`:''}
+      ${r.brand?`<span class="tag">${esc(r.brand)}</span>`:''}
+      ${r.custPhone?`<span class="tag">📞 ${esc(String(r.custPhone))}</span>`:''}
+    </div>
+    <div class="sync"><span class="s-dot ok"></span>${esc(String(r.ts||''))} · <b>${esc(r.staff||'(unknown)')}</b></div></div>`;
+}
 function renderLog(){
+  $('daySum').style.display='';
   const q=getQueue();
   const rows = logFilter==='today' ? q.filter(r=>r.date===todayStr())
               : q.filter(r=>r.outcome==='Quote-pending');
@@ -680,8 +708,10 @@ function wire(){
 
   $('saveBtn').onclick=saveEnquiry;
   $('goTodayBtn').onclick=()=>showView('today');
-  $('segToday').onclick=()=>{logFilter='today';$('segToday').classList.add('on');$('segAll').classList.remove('on');renderLog();};
-  $('segAll').onclick=()=>{logFilter='all';$('segAll').classList.add('on');$('segToday').classList.remove('on');renderLog();};
+  const setSeg=id=>['segToday','segAll','segStaffAll'].forEach(s=>$(s).classList.toggle('on',s===id));
+  $('segToday').onclick=()=>{logFilter='today';setSeg('segToday');renderLog();};
+  $('segAll').onclick=()=>{logFilter='all';setSeg('segAll');renderLog();};
+  $('segStaffAll').onclick=()=>{setSeg('segStaffAll');loadAllStaff();};
   $('editSave').onclick=saveEdit;
   $('editClose').onclick=()=>$('editModal').classList.remove('show');
 

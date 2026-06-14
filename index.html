@@ -491,8 +491,22 @@ function initUI(){
 }
 
 function showModels(make){
-  const mg=$('modelGroup'),mc=$('modelChips');
-  mc.innerHTML='';S.model='';$('modelOtherWrap').style.display='none';
+  const mg=$('modelGroup'),mc=$('modelChips'),lbl=mg.querySelector('.glabel');
+  mc.innerHTML='';S.model='';$('modelOther').value='';$('modelOtherWrap').style.display='none';
+  if(make==='Other'){
+    // "Other" make: no model needed. Just an optional free-text — Save works without it.
+    mc.style.display='none';
+    lbl.innerHTML='Model <span style="color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0">(optional)</span>';
+    $('modelOther').placeholder='Type model (optional)';
+    S.model='Other';
+    $('modelOtherWrap').style.display='block';
+    mg.style.display='block';
+    checkValid();
+    return;
+  }
+  mc.style.display='flex';
+  lbl.textContent='Model';
+  $('modelOther').placeholder='Type model';
   const list=MAKES[make]||['Other'];
   list.forEach(m=>{const c=chip(m,m);c.onclick=()=>{[...mc.children].forEach(x=>x.classList.remove('on'));c.classList.add('on');S.model=m;$('modelOtherWrap').style.display=(m==='Other')?'block':'none';checkValid();};mc.appendChild(c);});
   mg.style.display='block';

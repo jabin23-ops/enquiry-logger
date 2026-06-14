@@ -500,7 +500,7 @@ function showModels(make){
 
 /* ---------- validation: minimum log ---------- */
 function checkValid(){
-  let model=S.model; if(model==='Other')model=$('modelOther').value.trim();
+  let model=S.model; if(model==='Other')model=$('modelOther').value.trim()||'Other';  // typing a model is optional
   const phone=$('custPhone').value.trim();
   const ok = S.size && S.make && model && S.year && S.origin && S.mode && S.brand && phone;
   $('saveBtn').disabled=!ok;
